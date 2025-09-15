@@ -8,9 +8,10 @@ class Config:
     ENVIRONMENT = os.getenv('ENVIRONMENT', 'development')
     DEBUG = os.getenv('DEBUG', 'true').lower() == 'true'
     
-    # Database Configuration
+    # Database Configuration  
     DATABASE_URL = os.getenv('DATABASE_URL')
-    SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI', 'sqlite:///satellite_monitor.db')
+    # Use DATABASE_URL if provided (Railway/production), otherwise fallback to SQLite
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL') or os.getenv('SQLALCHEMY_DATABASE_URI', 'sqlite:///satellite_monitor.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Authentication - Clerk
