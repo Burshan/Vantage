@@ -1,0 +1,63 @@
+# Environment Variables
+.env
+.env.local
+.env.production
+.env.staging
+
+# Dependencies
+node_modules/
+backend/venv/
+backend/.venv/
+
+# Build outputs
+frontend/build/
+frontend/dist/
+backend/__pycache__/
+backend/*.pyc
+backend/*.pyo
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Images directory
+backend/images/
+images/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Railway
+.railway/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Security - Never commit these
+config_local.py
+secrets.json
+credentials.json
+
+# AWS
+.aws/

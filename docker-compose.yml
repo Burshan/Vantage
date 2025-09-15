@@ -1,0 +1,104 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  database:
+    image: postgres:15-alpine
+    container_name: vantage-db
+    environment:
+      POSTGRES_DB: vantage
+      POSTGRES_USER: vantage_user
+      POSTGRES_PASSWORD: vantage_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vantage_user -d vantage"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: vantage-backend
+    environment:
+      # Use local database
+      DATABASE_URL: postgresql://vantage_user:vantage_password@database:5432/vantage
+      
+      # Environment
+      ENVIRONMENT: production
+      DEBUG: false
+      
+      # API Config
+      API_HOST: 0.0.0.0
+      API_PORT: 5000
+      ALLOWED_ORIGINS: http://localhost:3000,http://localhost:80
+      
+      # Clerk Auth (set these in .env)
+      CLERK_PUBLISHABLE_KEY: ${CLERK_PUBLISHABLE_KEY}
+      CLERK_SECRET_KEY: ${CLERK_SECRET_KEY}
+      
+      # Satellite API (set these in .env)
+      CLIENT_ID: ${CLIENT_ID}
+      CLIENT_SECRET: ${CLIENT_SECRET}
+      
+      # AWS S3 (set these in .env)
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_S3_REGION: ${AWS_S3_REGION:-us-east-1}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
+      S3_UPLOAD_ENABLED: ${S3_UPLOAD_ENABLED:-true}
+      
+      # Image processing
+      USE_OPENCV: true
+      IMAGES_DIR: /app/images
+    volumes:
+      - backend_images:/app/images
+    ports:
+      - "5000:5000"
+    depends_on:
+      database:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        REACT_APP_API_URL: http://localhost:5000
+        REACT_APP_ENVIRONMENT: production
+    container_name: vantage-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_data:
+    driver: local
+  backend_images:
+    driver: local
+
+networks:
+  default:
+    name: vantage-network

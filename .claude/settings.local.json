@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3:*)",
+      "Bash(chmod:*)",
+      "Bash(curl:*)",
+      "Bash(npm install:*)",
+      "Bash(md5sum:*)",
+      "Bash(shasum:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
